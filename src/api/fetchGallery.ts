@@ -1,4 +1,4 @@
-import { BASE_URL } from "../helpers/constants";
+import { BASE_URL } from "../utils/constants";
 
 export const fetchGallery = async () => {
     try {

@@ -25,12 +25,7 @@ function Home() {
         return (
           <div
             key={image.id}
-            style={{
-              width: "50px",
-              height: "auto",
-              display: "flex",
-              justifyContent: "space-between",
-            }}
+           className="p-4 bg-secondary"
           >
             <img src={image.urls.regular} alt={image.alt_description} />
           </div>
