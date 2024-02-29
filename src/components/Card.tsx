@@ -7,8 +7,8 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ imageUrl, alt }) => {
     return (
-        <div className="max-w-sm rounded overflow-hidden shadow-lg m-4">
-            <img className="w-[300px] h-auto" src={imageUrl} alt={alt} />
+        <div className="h-80 w-full rounded overflow-hidden shadow-lg m-4 transform transition duration-500 ease-in-out hover:scale-105 hover:shadow-2xl">
+            <img className="h-full w-full object-cover" src={imageUrl} alt={alt} />
         </div>
     );
 };

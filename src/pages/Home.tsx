@@ -39,7 +39,7 @@ function Home() {
         />
         <Link to="/history" className="hover:text-orange-200 focus:cursor-pointer">History</Link>
       </div>
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap justify-around">
         {images.map(({ id, urls, alt_description }) => {
           return (
             <div key={id} className="p-4">
