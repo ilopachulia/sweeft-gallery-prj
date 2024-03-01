@@ -1,10 +1,11 @@
 import { BASE_URL } from "../utils/constants";
 
-export const fetchGallery = async () => {
+export const fetchGallery = async (page: number) => {
     try {
-        const response = await fetch(`${BASE_URL}/photos/?client_id=${import.meta.env.VITE_APP_API_KEY}`)
+        const perPage = 20; // replace with your desired number of items per page
+
+        const response = await fetch(`${BASE_URL}/photos/?client_id=${import.meta.env.VITE_APP_API_KEY}&order_by=popular&page=${page}&per_page=${perPage}`);
         const data = await response.json()
-        console.log('images', data);
         return data
     } catch (error) { 
         console.log('error', error);

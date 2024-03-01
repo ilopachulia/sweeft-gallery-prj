@@ -1,7 +1,8 @@
 import { fetchGallery } from "../api/fetchGallery";
 import Card from "../components/Card";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useRef, useEffect, RefObject } from "react";
 
 interface Image {
   id: string;
@@ -12,23 +13,48 @@ interface Image {
 }
 
 function Home() {
-  const { data: images, status, refetch } = useQuery({
+  const {
+    data: images,
+    fetchNextPage,
+    isFetchingNextPage,
+    status,
+  } = useInfiniteQuery({
     queryKey: ["gallery"],
-    queryFn: async () => await fetchGallery(),
+    queryFn: async ({ pageParam = 1 }) => await fetchGallery(pageParam),
+    getNextPageParam: (lastPage) => lastPage.nextPage ?? false,
+    initialPageParam: 1,
   });
 
-  const onChangeHandler = () => {
-    refetch();
-  };
+  const loadMoreRef = useRef() as RefObject<HTMLDivElement>;
 
-  if (status === 'pending') {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 1 }
+    );
+    if (loadMoreRef && loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+    return () => observer.disconnect();
+  }, [fetchNextPage]);
+
+  if (status === "pending") {
     return <div>Loading...</div>;
   }
 
-  if (status === 'error') {
+  if (status === "error") {
     return <div>Error fetching images</div>;
   }
 
+  console.log("images", images.pages);
+
+  const onChangeHandler = () => {
+    console.log("trulaila");
+  };
 
   return (
     <>
@@ -46,14 +72,19 @@ function Home() {
           History
         </Link>
       </div>
-      <div className="flex flex-wrap justify-around">
-        {(images as Image[]).map(({ id, urls, alt_description }: Image) => {
-          return (
-            <div key={id} className="p-4">
-              <Card imageUrl={urls.full} alt={alt_description} />
-            </div>
-          );
-        })}
+      <div className="flex flex-col justify-center items-center">
+        <div className="flex flex-wrap justify-around">
+          {images.pages.map((page: Image[], pageIndex: number) =>
+            page.map(({ id, urls, alt_description }: Image) => (
+              <div key={`${id}-${pageIndex}`} className="p-4">
+                <Card imageUrl={urls.full} alt={alt_description} />
+              </div>
+            ))
+          )}
+        </div>
+        <div ref={loadMoreRef}>
+          {isFetchingNextPage ? "Loading more..." : null}
+        </div>
       </div>
     </>
   );
