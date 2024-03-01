@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import { fetchGallery } from "../api/fetchGallery";
 import Card from "../components/Card";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 interface Image {
   id: string;
@@ -12,21 +12,23 @@ interface Image {
 }
 
 function Home() {
-  const [images, setImages] = useState<Image[]>([]);
+  const { data: images, status, refetch } = useQuery({
+    queryKey: ["gallery"],
+    queryFn: async () => await fetchGallery(),
+  });
 
-  useEffect(() => {
-    const fetchImages = async () => {
-      const data = await fetchGallery();
-      setImages(data);
-    };
-    fetchImages();
-  }, []);
-
-  const onChangeHandler = async () => {
-    const data = await fetchGallery();
-    console.log(data);
-    setImages(data);
+  const onChangeHandler = () => {
+    refetch();
   };
+
+  if (status === 'pending') {
+    return <div>Loading...</div>;
+  }
+
+  if (status === 'error') {
+    return <div>Error fetching images</div>;
+  }
+
 
   return (
     <>
@@ -37,10 +39,15 @@ function Home() {
           className="w-1/4 px-3 py-2 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:shadow-outline-blue focus:border-blue-300 sm:text-sm sm:leading-5"
           placeholder="Search..."
         />
-        <Link to="/history" className="hover:text-orange-200 focus:cursor-pointer">History</Link>
+        <Link
+          to="/history"
+          className="hover:text-orange-200 focus:cursor-pointer"
+        >
+          History
+        </Link>
       </div>
       <div className="flex flex-wrap justify-around">
-        {images.map(({ id, urls, alt_description }) => {
+        {(images as Image[]).map(({ id, urls, alt_description }: Image) => {
           return (
             <div key={id} className="p-4">
               <Card imageUrl={urls.full} alt={alt_description} />
