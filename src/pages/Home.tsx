@@ -1,25 +1,20 @@
 import Card from "../components/Card";
-import { Link } from "react-router-dom";
 import { useRef, useState, useCallback } from "react";
 import useGallery from "../hooks/useGallery";
-
-interface Image {
-  id: string;
-  urls: {
-    full: string;
-  };
-  alt_description: string;
-}
+import { Image } from "../utils/interfaces";
+import { useImages } from "../context/ImageContext";
 
 function Home() {
   const [page, setPage] = useState(1);
-  const { isLoading, isError, images } = useGallery(page);
+  const { loading, error } = useGallery(page);
+  const {images} = useImages();
+  console.log("home images", images)
 
   const observer = useRef<IntersectionObserver | null>(null);
 
   const loadMoreRef = useCallback(
     (node: HTMLDivElement | null) => {
-      if (isLoading) return;
+      if (loading) return;
       if (observer.current && observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
@@ -28,52 +23,35 @@ function Home() {
       });
       if (node) observer.current.observe(node);
     },
-    [isLoading]
+    [loading]
   );
 
-  if (isLoading) {
+  if (loading) {
     return <div>Loading...</div>;
   }
 
-  if (isError) {
+  if (error) {
     return <div>Error fetching images</div>;
   }
 
-  console.log("images", images);
-
-  const onChangeHandler = () => {
-    console.log("trulaila");
-  };
-
   return (
     <>
-      <div className="flex justify-between items-center">
-        <input
-          type="search"
-          onChange={onChangeHandler}
-          className="w-1/4 px-3 py-2 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:shadow-outline-blue focus:border-blue-300 sm:text-sm sm:leading-5"
-          placeholder="Search..."
-        />
-        <Link
-          to="/history"
-          className="hover:text-orange-200 focus:cursor-pointer"
-        >
-          History
-        </Link>
-      </div>
       <div className="flex flex-col justify-center items-center">
         <div className="flex flex-wrap justify-around">
-        {(images as Image[]).map(({ id, urls, alt_description }: Image) => {            
+          {(images as Image[]).map(
+            ({ id, urls, alt_description }: Image, index: number) => {
+              // using index as a key is not good practice due to performance issues
+              // but id and images are not unique so we can't use them as a key
+              const cloudinaryUrl = `https://res.cloudinary.com/dlncc1m55/image/fetch/w_500,h_500,c_fill,g_auto,f_auto/${urls.full}`;
               return (
-                <div key={id} className="p-4">
-                  <Card imageUrl={urls.full} alt={alt_description} />
+                <div key={id + index} className="p-4">
+                  <Card imageUrl={cloudinaryUrl} alt={alt_description} />
                 </div>
               );
-          })}
+            }
+          )}
         </div>
-        <div ref={loadMoreRef}>
-          {isLoading ? "Loading more..." : null}
-        </div>
+        <div ref={loadMoreRef}>{loading ? "Loading more..." : null}</div>
       </div>
     </>
   );
