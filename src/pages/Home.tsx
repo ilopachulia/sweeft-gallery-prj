@@ -1,6 +1,6 @@
 import Card from "../components/Card";
 import { Link } from "react-router-dom";
-import { useRef, RefObject, useState, useCallback } from "react";
+import { useRef, useState, useCallback } from "react";
 import useGallery from "../hooks/useGallery";
 
 interface Image {
