@@ -1,8 +1,7 @@
-import { fetchGallery } from "../api/fetchGallery";
 import Card from "../components/Card";
 import { Link } from "react-router-dom";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useRef, useEffect, RefObject } from "react";
+import { useRef, RefObject, useState, useCallback } from "react";
+import useGallery from "../hooks/useGallery";
 
 interface Image {
   id: string;
@@ -13,44 +12,34 @@ interface Image {
 }
 
 function Home() {
-  const {
-    data: images,
-    fetchNextPage,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
-    queryKey: ["gallery"],
-    queryFn: async ({ pageParam = 1 }) => await fetchGallery(pageParam),
-    getNextPageParam: (lastPage) => lastPage.nextPage ?? false,
-    initialPageParam: 1,
-  });
+  const [page, setPage] = useState(1);
+  const { isLoading, isError, images } = useGallery(page);
 
-  const loadMoreRef = useRef() as RefObject<HTMLDivElement>;
+  const observer = useRef<IntersectionObserver | null>(null);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          fetchNextPage();
+  const loadMoreRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (isLoading) return;
+      if (observer.current && observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          setPage((prevNum) => prevNum + 1);
         }
-      },
-      { threshold: 1 }
-    );
-    if (loadMoreRef && loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-    return () => observer.disconnect();
-  }, [fetchNextPage]);
+      });
+      if (node) observer.current.observe(node);
+    },
+    [isLoading]
+  );
 
-  if (status === "pending") {
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (status === "error") {
+  if (isError) {
     return <div>Error fetching images</div>;
   }
 
-  console.log("images", images.pages);
+  console.log("images", images);
 
   const onChangeHandler = () => {
     console.log("trulaila");
@@ -74,16 +63,16 @@ function Home() {
       </div>
       <div className="flex flex-col justify-center items-center">
         <div className="flex flex-wrap justify-around">
-          {images.pages.map((page: Image[], pageIndex: number) =>
-            page.map(({ id, urls, alt_description }: Image) => (
-              <div key={`${id}-${pageIndex}`} className="p-4">
-                <Card imageUrl={urls.full} alt={alt_description} />
-              </div>
-            ))
-          )}
+        {(images as Image[]).map(({ id, urls, alt_description }: Image) => {            
+              return (
+                <div key={id} className="p-4">
+                  <Card imageUrl={urls.full} alt={alt_description} />
+                </div>
+              );
+          })}
         </div>
         <div ref={loadMoreRef}>
-          {isFetchingNextPage ? "Loading more..." : null}
+          {isLoading ? "Loading more..." : null}
         </div>
       </div>
     </>
