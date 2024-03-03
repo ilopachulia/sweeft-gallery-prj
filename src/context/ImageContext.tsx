@@ -2,8 +2,8 @@ import React, { ReactNode, createContext, useContext, useState } from 'react';
 import { Image } from '../utils/interfaces';
 
 interface ImageContextProps {
-    images: Image[];
-    setImages: React.Dispatch<React.SetStateAction<Image[]>>;
+    images: Image[] | undefined;
+    setImages: React.Dispatch<React.SetStateAction<Image[] | undefined>>;
 }
 
  const ImageContext = createContext<ImageContextProps | undefined>(undefined);
@@ -17,7 +17,7 @@ export const useImages = () => {
 };
 
 export const ImageProvider = ({ children }: {children: ReactNode}) => {
-    const [images, setImages] = useState<Image[]>([]);
+    const [images, setImages] = useState<Image[] | undefined>([]);
     return (
         <ImageContext.Provider value={{ images, setImages }}>
             {children}

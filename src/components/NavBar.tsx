@@ -1,8 +1,9 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useImages } from "../context/ImageContext";
-import { fetchGallery } from "../api/fetchGallery";
 import { useQueries } from "../context/QueryContext";
+import { api } from "../api/fetchPhotos";
+import { Image } from "../utils/interfaces";
 
 const NavBar = () => {
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -11,15 +12,22 @@ const NavBar = () => {
   const { setQueries } = useQueries();
 
   useEffect(() => {
-    const fetchImages = async () => {
-      const images = await fetchGallery(1, 10, query);
-      setImages(images);
-      setQueries((prevQueries) => [...new Set([query, ...prevQueries])]);
-      localStorage.setItem(query, JSON.stringify(images));
+    if (localStorage.getItem(query)) {
+      const storedImages = localStorage.getItem(query);
+      setImages(JSON.parse(storedImages as string));
       setQuery("");
-    };
+      return;
+    }
 
-    fetchImages();
+    api.search.getPhotos({ query: query }).then((result) => {
+      if (result.response) {
+        const images = result.response.results as Image[];
+        setImages(images);
+        setQueries((prevQueries) => [...new Set([query, ...prevQueries])]);
+        localStorage.setItem(query, JSON.stringify(images));
+        setQuery("");
+      }
+    });
   }, [query]);
 
   const onChangeHandler = (evt: ChangeEvent<HTMLInputElement>) => {
@@ -37,6 +45,7 @@ const NavBar = () => {
     <nav>
       <div className="flex justify-between items-center">
         <input
+          value={query}
           type="search"
           onChange={onChangeHandler}
           className="w-1/4 px-3 py-2 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:shadow-outline-blue focus:border-blue-300 sm:text-sm sm:leading-5"
