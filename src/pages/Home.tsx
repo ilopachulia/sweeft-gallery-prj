@@ -24,6 +24,7 @@ function Home() {
     [loading]
   );
 
+
   if (loading) {
     return <div>Loading...</div>;
   }

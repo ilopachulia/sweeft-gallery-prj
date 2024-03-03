@@ -4,8 +4,6 @@ import Card from "./Card";
 import { api } from "../api/fetchPhotos";
 import Modal from "./Modal";
 
-
-
 function CardsGrid({ images }: { images: Image[] | null | undefined }) {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [downloads, setDownloads] = useState<number>(0);
@@ -26,10 +24,7 @@ function CardsGrid({ images }: { images: Image[] | null | undefined }) {
 
   return (
     <>
-      <div
-        className="flex flex-wrap justify-around"
-        onClick={() => setIsModalVisible(false)}
-      >
+      <div className="flex flex-wrap justify-around">
         {images &&
           (images as Image[]).map(
             ({ id, urls, alt_description }: Image, index: number) => {

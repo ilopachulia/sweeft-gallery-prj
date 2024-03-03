@@ -15,7 +15,6 @@ const NavBar = () => {
     if (localStorage.getItem(query)) {
       const storedImages = localStorage.getItem(query);
       setImages(JSON.parse(storedImages as string));
-      setQuery("");
       return;
     }
 
@@ -25,7 +24,6 @@ const NavBar = () => {
         setImages(images);
         setQueries((prevQueries) => [...new Set([query, ...prevQueries])]);
         localStorage.setItem(query, JSON.stringify(images));
-        setQuery("");
       }
     });
   }, [query]);
@@ -45,7 +43,6 @@ const NavBar = () => {
     <nav>
       <div className="flex justify-between items-center">
         <input
-          value={query}
           type="search"
           onChange={onChangeHandler}
           className="w-1/4 px-3 py-2 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:shadow-outline-blue focus:border-blue-300 sm:text-sm sm:leading-5"

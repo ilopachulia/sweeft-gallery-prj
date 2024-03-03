@@ -1,21 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueries } from "../context/QueryContext";
 import { Image } from "../utils/interfaces";
 import CardsGrid from "../components/CardsGrid";
 
 function History() {
-const { queries } = useQueries();
-const [images, setImages] = useState<Image[] | null>();
-if (queries.length === 0) return null;
+  const { queries } = useQueries();
+  const [images, setImages] = useState<Image[] | null>();
 
-const getStoredImages = (query: string) => {
+  useEffect(() => {
+    localStorage.clear();
+  }, []);
+
+  const getStoredImages = (query: string) => {
     const storedImages = localStorage.getItem(query);
     setImages(JSON.parse(storedImages as string));
-};
+  };
 
   return (
     <div className="flex flex-col items-center">
-     <div className="flex flex-row flex-wrap">
+      <div className="flex flex-row flex-wrap">
         {queries.map(
           (query: string) =>
             query.trim() !== "" && (
