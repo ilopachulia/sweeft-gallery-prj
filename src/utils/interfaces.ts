@@ -6,3 +6,8 @@ export interface Image {
     alt_description: string;
   }
   
+ export interface StatsProps {
+    downloads: { total: number };
+    views: { total: number };
+    likes: { total: number };
+  }

@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Image } from "../utils/interfaces";
+import { Image, StatsProps } from "../utils/interfaces";
 import Card from "./Card";
 import { api } from "../api/fetchPhotos";
 import Modal from "./Modal";
+
+
 
 function CardsGrid({ images }: { images: Image[] | null | undefined }) {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
@@ -13,7 +15,7 @@ function CardsGrid({ images }: { images: Image[] | null | undefined }) {
 
   const openModal = async (id: string, url: string) => {
     const image = await api.photos.getStats({ photoId: id }).then((result) => {
-      return result.response;
+      return result.response as StatsProps | undefined;
     });
     setDownloads(image?.downloads.total as number);
     setViews(image?.views.total as number);
